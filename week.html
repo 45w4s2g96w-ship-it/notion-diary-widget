@@ -19,7 +19,7 @@ body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; }
 .col-head { font-size: 9px; font-weight: 700; color: #111; padding: 6px 8px 5px; border-bottom: 1.5px solid #111; background: #fff; letter-spacing: 0.5px; text-transform: uppercase; }
 .col-head.today { background: #111; color: #fff; }
 .col-body { padding: 8px; min-height: 160px; position: relative; }
-.day-text { font-size: 9px; font-weight: 400; color: #222; line-height: 1.7; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 9; -webkit-box-orient: vertical; }
+.day-text { font-size: 9px; font-weight: 400; color: #222; line-height: 1.7;  }
 .emp .col-head { color: #ccc; }
 .emp .col-body { background: #fafafa; }
 .setup { padding: 2rem; max-width: 480px; }
@@ -85,7 +85,8 @@ async function fetchEntries() {
       const title = (page.properties['이름']?.title || []).map(t=>t.plain_text).join('');
       const energy = page.properties[S.propName]?.select?.name || '';
       const summary = (page.properties['일기 요약']?.rich_text || []).map(t=>t.plain_text).join('');
-      if (summary) S.entries[d] = { id: page.id, energy, summary };
+      const url = page.url;
+      if (summary) S.entries[d] = { id: page.id, energy, summary, url };
     });
     S.loading = false; render();
   } catch(e) { S.loading = false; S.error = e.message; render(); }
