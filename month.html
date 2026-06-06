@@ -82,7 +82,8 @@ async function fetchEntries() {
       const title = (page.properties['이름']?.title || []).map(t=>t.plain_text).join('');
       const energy = page.properties[S.propName]?.select?.name || '';
       const summary = (page.properties['일기 요약']?.rich_text || []).map(t=>t.plain_text).join('');
-      if (summary) S.entries[d] = { id: page.id, energy, summary };
+      const url = page.url;
+      if (summary) S.entries[d] = { id: page.id, energy, summary, url };
     });
     S.loading = false; render();
   } catch(e) { S.loading = false; S.error = e.message; render(); }
