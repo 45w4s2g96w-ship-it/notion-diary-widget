@@ -1,5 +1,14 @@
 {
+  "functions": {
+    "api/notion.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  },
   "rewrites": [
-    { "source": "/api/notion/:path*", "destination": "/api/notion" }
+    {
+      "source": "/api/notion/(.*)",
+      "destination": "/api/notion"
+    }
   ]
 }
