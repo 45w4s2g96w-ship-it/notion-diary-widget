@@ -84,7 +84,8 @@ async function fetchEntries() {
       const d = dateVal.slice(0,10);
       const title = (page.properties['이름']?.title || []).map(t=>t.plain_text).join('');
       const energy = page.properties[S.propName]?.select?.name || '';
-      S.entries[d] = { id: page.id, title, energy };
+      const summary = (page.properties['일기 요약']?.rich_text || []).map(t=>t.plain_text).join('');
+      S.entries[d] = { id: page.id, energy, summary };
     });
     S.loading = false; render();
   } catch(e) { S.loading = false; S.error = e.message; render(); }
@@ -117,7 +118,7 @@ function widgetHTML() {
     const isEmpty = !entry;
     return `<div class="col${isEmpty?' emp':''}">
       <div class="col-head${isToday(d)?' today':''}">${d.getDate()} ${DAYS[d.getDay()]}.</div>
-      <div class="col-body"${bg?` style="background:${bg}"`:''}>${entry ? `<div class="day-text">${entry.title}</div>` : ''}</div>
+      <div class="col-body"${bg?` style="background:${bg}"`:''}>${entry ? `<div class="day-text">${entry.summary || entry.title}</div>` : ''}</div>
     </div>`;
   }).join('');
   return `<div class="root">
