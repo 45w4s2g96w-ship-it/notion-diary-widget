@@ -3,92 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>이번 주 일기</title>
+<title>This Week</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; background: #fff; color: #1a1a1a; font-size: 14px; }
-
-.setup { padding: 2rem; max-width: 480px; margin: 0 auto; }
-.setup h2 { font-size: 16px; font-weight: 600; margin-bottom: 1.5rem; }
+body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; }
+.root { padding: 1.5rem; }
+.top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 0.6rem; }
+.big-title { font-size: 42px; font-weight: 900; color: #111; line-height: 1; text-transform: uppercase; }
+.nav { display: flex; align-items: center; gap: 12px; }
+.nav-b { font-size: 7px; color: #111; cursor: pointer; user-select: none; }
+.sub { font-size: 10px; font-weight: 700; color: #888; letter-spacing: 2px; text-transform: uppercase; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); border-left: 1.5px solid #111; border-top: 1.5px solid #111; }
+.col { border-right: 1.5px solid #111; border-bottom: 1.5px solid #111; }
+.col-head { font-size: 9px; font-weight: 700; color: #111; padding: 6px 8px 5px; border-bottom: 1.5px solid #111; background: #fff; letter-spacing: 0.5px; text-transform: uppercase; }
+.col-head.today { background: #111; color: #fff; }
+.col-body { padding: 8px; min-height: 160px; position: relative; }
+.day-text { font-size: 9px; font-weight: 400; color: #222; line-height: 1.7; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 9; -webkit-box-orient: vertical; }
+.emp .col-head { color: #ccc; }
+.emp .col-body { background: #fafafa; }
+.setup { padding: 2rem; max-width: 480px; }
+.setup h2 { font-size: 16px; font-weight: 700; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; }
 .field { margin-bottom: 12px; }
-.field label { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
-.field input { width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; color: #1a1a1a; outline: none; }
-.field input:focus { border-color: #aaa; background: #fff; }
-.btn { border-radius: 8px; padding: 9px 18px; font-size: 13px; cursor: pointer; border: 1px solid #e0e0e0; background: #fff; color: #1a1a1a; transition: all 0.15s; }
-.btn:hover { background: #f5f5f5; }
-.btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.btn-primary:hover { background: #333; }
-.error { font-size: 12px; color: #e24b4a; margin-top: 8px; }
-
-.widget { padding: 1.2rem 1.4rem; }
-.widget-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
-.widget-title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
-.week-range { font-size: 11px; color: #999; }
-.legend { display: flex; gap: 10px; }
-.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #888; }
-.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-high { background: #639922; }
-.dot-mid { background: #BA7517; }
-.dot-low { background: #E24B4A; }
-
-.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-.day-col { display: flex; flex-direction: column; gap: 4px; }
-.day-label { font-size: 11px; color: #999; text-align: center; font-weight: 500; padding-bottom: 2px; }
-.day-label.today-label { color: #1a1a1a; font-weight: 700; }
-.day-card { border-radius: 10px; border: 1px solid #efefef; padding: 8px 7px; min-height: 120px; position: relative; overflow: hidden; background: #fafafa; transition: border-color 0.15s; }
-.day-card.today { border-color: #ccc; background: #fff; }
-.day-card.has-entry { cursor: pointer; background: #fff; }
-.day-card.has-entry:hover { border-color: #bbb; }
-.day-card.empty { opacity: 0.4; }
-.day-num { font-size: 11px; color: #bbb; font-weight: 500; margin-bottom: 5px; }
-.day-card.today .day-num { color: #1a1a1a; }
-.entry-text { font-size: 10px; color: #555; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; }
-.energy-stripe { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0; }
-.stripe-high { background: #639922; }
-.stripe-mid { background: #BA7517; }
-.stripe-low { background: #E24B4A; }
-.bg-high { background: rgba(99,153,34,0.07) !important; }
-.bg-mid { background: rgba(186,117,23,0.07) !important; }
-.bg-low { background: rgba(226,75,74,0.07) !important; }
-
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; z-index: 999; }
-.modal { background: #fff; border-radius: 14px; padding: 1.4rem; width: 340px; max-height: 70vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
-.modal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.modal-title { font-size: 14px; font-weight: 600; }
-.modal-x { background: none; border: none; font-size: 18px; color: #aaa; cursor: pointer; line-height: 1; padding: 0 2px; }
-.modal-energy { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; margin-bottom: 10px; font-weight: 500; }
-.modal-content { font-size: 13px; color: #444; line-height: 1.75; white-space: pre-wrap; }
-.loading-text { font-size: 12px; color: #aaa; text-align: center; padding: 2rem; }
-.settings-link { font-size: 11px; color: #bbb; text-align: right; margin-top: 10px; cursor: pointer; }
-.settings-link:hover { color: #888; }
+.field label { font-size: 11px; font-weight: 700; color: #666; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.field input { width: 100%; padding: 8px 12px; font-size: 13px; border: 1.5px solid #111; background: #fff; color: #111; outline: none; font-family: 'Montserrat', sans-serif; }
+.btn { border: 1.5px solid #111; background: #111; color: #fff; padding: 9px 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; font-family: 'Montserrat', sans-serif; }
+.error { font-size: 11px; color: #c00; margin-top: 8px; }
+.settings-btn { font-size: 9px; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; margin-top: 10px; text-align: right; }
+.settings-btn:hover { color: #888; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-const DAYS_KO = ['일','월','화','수','목','금','토'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 let S = {
   screen: localStorage.getItem('nw_screen') || 'setup',
   apiKey: localStorage.getItem('nw_apiKey') || '',
   dbId: localStorage.getItem('nw_dbId') || '',
   propName: localStorage.getItem('nw_propName') || '에너지 레벨',
-  entries: {}, loading: false, error: '', modal: null
+  weekOffset: 0,
+  entries: {}, loading: false, error: ''
 };
 
-function ec(val) {
-  if (val === '높음') return 'high';
-  if (val === '보통') return 'mid';
-  if (val === '낮음') return 'low';
-  return '';
-}
 function pad(n) { return String(n).padStart(2,'0'); }
 function dateKey(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-function isToday(d) { const t = new Date(); return dateKey(d) === dateKey(t); }
+function isToday(d) { return dateKey(d) === dateKey(new Date()); }
 
 function getWeekDays() {
   const today = new Date(); today.setHours(0,0,0,0);
-  const sunday = new Date(today); sunday.setDate(today.getDate() - today.getDay());
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - today.getDay() + S.weekOffset * 7);
   return Array.from({length:7}, (_,i) => { const d = new Date(sunday); d.setDate(sunday.getDate()+i); return d; });
+}
+
+function ec(val) {
+  if (val === '높음') return '#EAF3DE';
+  if (val === '보통') return '#FAEEDA';
+  if (val === '낮음') return '#FCEBEB';
+  return '';
 }
 
 async function fetchEntries() {
@@ -116,86 +90,49 @@ async function fetchEntries() {
   } catch(e) { S.loading = false; S.error = e.message; render(); }
 }
 
-async function fetchContent(pageId) {
-  const res = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children?page_size=50`, {
-    headers: { 'Authorization': `Bearer ${S.apiKey}`, 'Notion-Version': '2022-06-28' }
-  });
-  const data = await res.json();
-  const texts = [];
-  (data.results || []).forEach(b => {
-    const rt = b[b.type]?.rich_text || [];
-    const text = rt.map(r=>r.plain_text).join('');
-    if (text) texts.push(text);
-  });
-  return texts.join('\n') || '내용 없음';
-}
-
 function render() {
   document.getElementById('app').innerHTML = S.screen === 'setup' ? setupHTML() : widgetHTML();
-  if (S.modal) document.getElementById('app').insertAdjacentHTML('beforeend', modalHTML());
   bindEvents();
 }
 
 function setupHTML() {
   return `<div class="setup">
-    <h2>이번 주 일기 위젯</h2>
-    <div class="field"><label>Notion API 키</label><input type="password" id="f-key" placeholder="secret_..." value="${S.apiKey}"></div>
-    <div class="field"><label>데이터베이스 ID</label><input type="text" id="f-db" placeholder="37451f41..." value="${S.dbId}"></div>
+    <h2>This Week</h2>
+    <div class="field"><label>Notion API Key</label><input type="password" id="f-key" placeholder="secret_..." value="${S.apiKey}"></div>
+    <div class="field"><label>Database ID</label><input type="text" id="f-db" placeholder="37451f41..." value="${S.dbId}"></div>
     <div class="field"><label>에너지 레벨 속성명</label><input type="text" id="f-prop" value="${S.propName}"></div>
     ${S.error ? `<div class="error">${S.error}</div>` : ''}
-    <div style="margin-top:1.2rem"><button class="btn btn-primary" id="btn-connect">연결하기</button></div>
+    <div style="margin-top:1.2rem"><button class="btn" id="btn-connect">Connect</button></div>
   </div>`;
 }
 
 function widgetHTML() {
   const days = getWeekDays();
   const start = days[0]; const end = days[6];
-  const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+  const fmt = d => `${MONTHS[d.getMonth()]} ${d.getDate()}`;
   const cols = days.map(d => {
     const key = dateKey(d);
     const entry = S.entries[key];
-    const e = entry ? ec(entry.energy) : '';
-    return `<div class="day-col">
-      <div class="day-label${isToday(d)?' today-label':''}">${DAYS_KO[d.getDay()]}</div>
-      <div class="day-card${isToday(d)?' today':''}${entry?' has-entry bg-'+e:'  empty'}" ${entry?`data-key="${key}"`:''}">
-        <div class="day-num">${d.getDate()}</div>
-        ${entry ? `<div class="energy-stripe stripe-${e}"></div><div class="entry-text">${entry.title}</div>` : ''}
-      </div>
+    const bg = entry ? ec(entry.energy) : '';
+    const isEmpty = !entry;
+    return `<div class="col${isEmpty?' emp':''}">
+      <div class="col-head${isToday(d)?' today':''}">${d.getDate()} ${DAYS[d.getDay()]}.</div>
+      <div class="col-body"${bg?` style="background:${bg}"`:''}>${entry ? `<div class="day-text">${entry.title}</div>` : ''}</div>
     </div>`;
   }).join('');
-  return `<div class="widget">
-    <div class="widget-header">
-      <div>
-        <div class="widget-title">이번 주 일기</div>
-        <div class="week-range">${fmt(start)} – ${fmt(end)}</div>
-      </div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot dot-high"></div>높음</div>
-        <div class="legend-item"><div class="legend-dot dot-mid"></div>보통</div>
-        <div class="legend-item"><div class="legend-dot dot-low"></div>낮음</div>
+  return `<div class="root">
+    <div class="top">
+      <div class="big-title">This Week</div>
+      <div class="nav">
+        <span class="nav-b" id="btn-prev">◀</span>
+        <span class="sub">${fmt(start)} – ${fmt(end)}</span>
+        <span class="nav-b" id="btn-next">▶</span>
       </div>
     </div>
-    <div class="week-grid">${cols}</div>
-    ${S.loading ? '<div class="loading-text">불러오는 중...</div>' : ''}
+    <div class="cal">${cols}</div>
+    ${S.loading ? '<div style="font-size:11px;color:#aaa;margin-top:8px;text-transform:uppercase;letter-spacing:1px">Loading...</div>' : ''}
     ${S.error ? `<div class="error" style="margin-top:8px">${S.error}</div>` : ''}
-    <div class="settings-link" id="btn-settings">⚙ 설정</div>
-  </div>`;
-}
-
-function modalHTML() {
-  const m = S.modal;
-  const e = ec(m.energy);
-  const colors = { high: ['rgba(99,153,34,0.12)','#3B6D11'], mid: ['rgba(186,117,23,0.12)','#854F0B'], low: ['rgba(226,75,74,0.12)','#A32D2D'] };
-  const [bg, fg] = colors[e] || ['#f0f0f0','#555'];
-  return `<div class="modal-overlay" id="modal-overlay">
-    <div class="modal">
-      <div class="modal-top">
-        <div class="modal-title">${m.title}</div>
-        <button class="modal-x" id="btn-modal-close">×</button>
-      </div>
-      ${m.energy ? `<span class="modal-energy" style="background:${bg};color:${fg}">${m.energy}</span>` : ''}
-      <div class="modal-content">${m.content}</div>
-    </div>
+    <div class="settings-btn" id="btn-settings">⚙ Settings</div>
   </div>`;
 }
 
@@ -204,28 +141,16 @@ function bindEvents() {
     S.apiKey = document.getElementById('f-key').value.trim();
     S.dbId = document.getElementById('f-db').value.trim();
     S.propName = document.getElementById('f-prop').value.trim() || '에너지 레벨';
-    if (!S.apiKey || !S.dbId) { S.error = 'API 키와 DB ID를 입력해주세요.'; render(); return; }
+    if (!S.apiKey || !S.dbId) { S.error = 'API Key와 DB ID를 입력해주세요.'; render(); return; }
     localStorage.setItem('nw_apiKey', S.apiKey);
     localStorage.setItem('nw_dbId', S.dbId);
     localStorage.setItem('nw_propName', S.propName);
     localStorage.setItem('nw_screen', 'widget');
     S.screen = 'widget'; fetchEntries();
   });
-  document.getElementById('btn-settings')?.addEventListener('click', () => {
-    S.screen = 'setup'; S.error = ''; render();
-  });
-  document.getElementById('btn-modal-close')?.addEventListener('click', () => { S.modal = null; render(); });
-  document.getElementById('modal-overlay')?.addEventListener('click', e => { if(e.target.id==='modal-overlay'){S.modal=null;render();} });
-  document.querySelectorAll('.has-entry[data-key]').forEach(el => {
-    el.addEventListener('click', async () => {
-      const key = el.dataset.key;
-      const entry = S.entries[key];
-      S.modal = { title: entry.title, energy: entry.energy, content: '불러오는 중...' };
-      render();
-      S.modal.content = await fetchContent(entry.id);
-      render();
-    });
-  });
+  document.getElementById('btn-prev')?.addEventListener('click', () => { S.weekOffset--; fetchEntries(); });
+  document.getElementById('btn-next')?.addEventListener('click', () => { S.weekOffset++; fetchEntries(); });
+  document.getElementById('btn-settings')?.addEventListener('click', () => { S.screen='setup'; S.error=''; render(); });
 }
 
 render();
