@@ -82,7 +82,7 @@ async function fetchEntries() {
       const title = (page.properties['이름']?.title || []).map(t=>t.plain_text).join('');
       const energy = page.properties[S.propName]?.select?.name || '';
       const summary = (page.properties['일기 요약']?.rich_text || []).map(t=>t.plain_text).join('');
-      S.entries[d] = { id: page.id, energy, summary };
+      if (summary) S.entries[d] = { id: page.id, energy, summary };
     });
     S.loading = false; render();
   } catch(e) { S.loading = false; S.error = e.message; render(); }
@@ -121,11 +121,11 @@ function widgetHTML() {
     const d = new Date(S.year, S.month, i);
     const key = `${S.year}-${pad(S.month+1)}-${pad(i)}`;
     const entry = S.entries[key];
-    const bg = entry ? ec(entry.energy) : '';
+    const bg = entry?.summary ? ec(entry.energy) : '';
     const td = isToday(S.year, S.month, i);
     cells += `<div class="dc${td?' today-cell':''}"${bg?` style="background:${bg}"`:''}">
       <div class="dn">${i} ${DAY_ABBR[d.getDay()]}</div>
-      ${entry ? `<div class="ep">${entry.summary || entry.title}</div>` : ''}
+      ${entry?.summary ? `<div class="ep">${entry.summary}</div>` : ''}
     </div>`;
   }
   let after = 0;
