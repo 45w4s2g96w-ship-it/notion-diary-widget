@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>This Month</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; }
+.root { padding: 1.5rem; }
+.big-title { font-size: 42px; font-weight: 900; color: #111; line-height: 1; margin-bottom: 0.5rem; text-transform: uppercase; }
+.month-tabs { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); margin-bottom: 0.8rem; }
+.mt { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(17,17,17,0.35); cursor: pointer; padding: 4px 0; text-align: center; user-select: none; }
+.mt.active { color: #111; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); border-left: 1.5px solid #111; border-top: 1.5px solid #111; }
+.dh { font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #fff; padding: 5px 6px; border-right: 1.5px solid #111; border-bottom: 1.5px solid #111; background: #111; }
+.dc { border-right: 1.5px solid #111; border-bottom: 1.5px solid #111; padding: 5px 6px; min-height: 68px; background: #fff; }
+.dc.om { background: #f5f5f5; opacity: 0.4; }
+.dc.today-cell { outline: 2px solid #111; outline-offset: -2px; }
+.dn { font-size: 9px; font-weight: 700; color: #111; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+.dc.om .dn { color: #bbb; }
+.ep { font-size: 8px; font-weight: 400; color: #222; line-height: 1.55; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
+.setup { padding: 2rem; max-width: 480px; }
+.setup h2 { font-size: 16px; font-weight: 700; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; }
+.field { margin-bottom: 12px; }
+.field label { font-size: 11px; font-weight: 700; color: #666; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.field input { width: 100%; padding: 8px 12px; font-size: 13px; border: 1.5px solid #111; background: #fff; color: #111; outline: none; font-family: 'Montserrat', sans-serif; }
+.btn { border: 1.5px solid #111; background: #111; color: #fff; padding: 9px 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; font-family: 'Montserrat', sans-serif; }
+.error { font-size: 11px; color: #c00; margin-top: 8px; }
+.settings-btn { font-size: 9px; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; margin-top: 10px; text-align: right; }
+.settings-btn:hover { color: #888; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAY_ABBR = ['Sun.','Mon.','Tue.','Wed.','Thu.','Fri.','Sat.'];
+const todayObj = new Date();
+let S = {
+  screen: localStorage.getItem('nm_screen') || 'setup',
+  apiKey: localStorage.getItem('nm_apiKey') || '',
+  dbId: localStorage.getItem('nm_dbId') || '',
+  propName: localStorage.getItem('nm_propName') || '에너지 레벨',
+  year: todayObj.getFullYear(),
+  month: todayObj.getMonth(),
+  entries: {}, loading: false, error: ''
+};
+
+function pad(n) { return String(n).padStart(2,'0'); }
+function dateKey(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function isToday(y,m,d) { return y===todayObj.getFullYear() && m===todayObj.getMonth() && d===todayObj.getDate(); }
+
+function ec(val) {
+  if (val === '높음') return '#EAF3DE';
+  if (val === '보통') return '#FAEEDA';
+  if (val === '낮음') return '#FCEBEB';
+  return '';
+}
+
+async function fetchEntries() {
+  S.loading = true; S.error = ''; render();
+  const first = new Date(S.year, S.month, 1);
+  const last = new Date(S.year, S.month+1, 0);
+  const start = `${S.year}-${pad(S.month+1)}-01`;
+  const end = `${S.year}-${pad(S.month+1)}-${pad(last.getDate())}`;
+  try {
+    const res = await fetch(`/api/notion/databases/${S.dbId}/query`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${S.apiKey}`, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filter: { and: [{ property: '날짜', date: { on_or_after: start } }, { property: '날짜', date: { on_or_before: end } }] }, page_size: 100 })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || '연결 오류');
+    S.entries = {};
+    (data.results || []).forEach(page => {
+      const dateVal = page.properties['날짜']?.date?.start;
+      if (!dateVal) return;
+      const d = dateVal.slice(0,10);
+      const title = (page.properties['이름']?.title || []).map(t=>t.plain_text).join('');
+      const energy = page.properties[S.propName]?.select?.name || '';
+      S.entries[d] = { id: page.id, title, energy };
+    });
+    S.loading = false; render();
+  } catch(e) { S.loading = false; S.error = e.message; render(); }
+}
+
+function render() {
+  document.getElementById('app').innerHTML = S.screen === 'setup' ? setupHTML() : widgetHTML();
+  bindEvents();
+}
+
+function setupHTML() {
+  return `<div class="setup">
+    <h2>This Month</h2>
+    <div class="field"><label>Notion API Key</label><input type="password" id="f-key" placeholder="secret_..." value="${S.apiKey}"></div>
+    <div class="field"><label>Database ID</label><input type="text" id="f-db" placeholder="37451f41..." value="${S.dbId}"></div>
+    <div class="field"><label>에너지 레벨 속성명</label><input type="text" id="f-prop" value="${S.propName}"></div>
+    ${S.error ? `<div class="error">${S.error}</div>` : ''}
+    <div style="margin-top:1.2rem"><button class="btn" id="btn-connect">Connect</button></div>
+  </div>`;
+}
+
+function widgetHTML() {
+  const tabs = MONTHS_SHORT.map((m,i) =>
+    `<div class="mt${i===S.month?' active':''}" data-m="${i}">${m}</div>`
+  ).join('');
+
+  const first = new Date(S.year, S.month, 1);
+  const last = new Date(S.year, S.month+1, 0);
+  let cells = DAYS.map(d => `<div class="dh">${d}</div>`).join('');
+
+  for (let i = 0; i < first.getDay(); i++) {
+    const d = new Date(S.year, S.month, 1 - first.getDay() + i);
+    cells += `<div class="dc om"><div class="dn">${d.getDate()}</div></div>`;
+  }
+  for (let i = 1; i <= last.getDate(); i++) {
+    const d = new Date(S.year, S.month, i);
+    const key = `${S.year}-${pad(S.month+1)}-${pad(i)}`;
+    const entry = S.entries[key];
+    const bg = entry ? ec(entry.energy) : '';
+    const td = isToday(S.year, S.month, i);
+    cells += `<div class="dc${td?' today-cell':''}"${bg?` style="background:${bg}"`:''}">
+      <div class="dn">${i} ${DAY_ABBR[d.getDay()]}</div>
+      ${entry ? `<div class="ep">${entry.title}</div>` : ''}
+    </div>`;
+  }
+  let after = 0;
+  while ((first.getDay() + last.getDate() + after) % 7 !== 0) after++;
+  for (let i = 1; i <= after; i++) cells += `<div class="dc om"><div class="dn">${i}</div></div>`;
+
+  return `<div class="root">
+    <div class="big-title">This Month</div>
+    <div class="month-tabs" id="tabs">${tabs}</div>
+    <div class="cal">${cells}</div>
+    ${S.loading ? '<div style="font-size:11px;color:#aaa;margin-top:8px;text-transform:uppercase;letter-spacing:1px">Loading...</div>' : ''}
+    ${S.error ? `<div class="error" style="margin-top:8px">${S.error}</div>` : ''}
+    <div class="settings-btn" id="btn-settings">⚙ Settings</div>
+  </div>`;
+}
+
+function bindEvents() {
+  document.getElementById('btn-connect')?.addEventListener('click', () => {
+    S.apiKey = document.getElementById('f-key').value.trim();
+    S.dbId = document.getElementById('f-db').value.trim();
+    S.propName = document.getElementById('f-prop').value.trim() || '에너지 레벨';
+    if (!S.apiKey || !S.dbId) { S.error = 'API Key와 DB ID를 입력해주세요.'; render(); return; }
+    localStorage.setItem('nm_apiKey', S.apiKey);
+    localStorage.setItem('nm_dbId', S.dbId);
+    localStorage.setItem('nm_propName', S.propName);
+    localStorage.setItem('nm_screen', 'widget');
+    S.screen = 'widget'; fetchEntries();
+  });
+  document.querySelectorAll('.mt').forEach(el => {
+    el.addEventListener('click', () => { S.month = +el.dataset.m; fetchEntries(); });
+  });
+  document.getElementById('btn-settings')?.addEventListener('click', () => { S.screen='setup'; S.error=''; render(); });
+}
+
+render();
+if (S.screen === 'widget') fetchEntries();
+</script>
+</body>
+</html>
